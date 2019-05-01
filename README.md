@@ -1,3 +1,8 @@
+## Forked to migrate from GSON to Moshi
+
+____
+
+
 # Retrofit Converter - With GraphQL Support &nbsp; [![](https://jitpack.io/v/AniTrend/retrofit-graphql.svg)](https://jitpack.io/#AniTrend/retrofit-graphql) &nbsp; [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6fe1544b73084e25801c4343d1bb6d70)](https://www.codacy.com/app/AniTrend/retrofit-graphql?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AniTrend/retrofit-graphql&amp;utm_campaign=Badge_Grade) &nbsp; [![Build Status](https://travis-ci.org/AniTrend/retrofit-graphql.svg?branch=master)](https://travis-ci.org/AniTrend/retrofit-graphql)
 
 This is a retrofit converter which uses annotations to inject .graphql query or mutation files into a request body along with any GraphQL variables. The included example makes use of [GitHunt GraphQL API](http://api.githunt.com/graphiql) that sometimes responds with null fields, feel free to try it with any other GraphQL API like `GitHub API v4` also this project does not teach you how to use Retrofit, Glide or the ViewModel.
