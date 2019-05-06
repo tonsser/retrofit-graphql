@@ -1,7 +1,8 @@
 package io.github.wax911.retgraph.api.retro.converter
 
 import android.content.Context
-import com.google.gson.GsonBuilder
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.github.wax911.library.converter.GraphConverter
 import io.github.wax911.library.converter.request.GraphRequestConverter
 import io.github.wax911.library.converter.response.GraphResponseConverter
@@ -23,11 +24,9 @@ class GitHuntConverter private constructor(context: Context?): GraphConverter(co
     companion object {
         fun create(context: Context?): GitHuntConverter =
                 GitHuntConverter(context).apply {
-                    gson = GsonBuilder()
-                            .enableComplexMapKeySerialization()
-                            .serializeNulls()
-                            .setLenient()
-                            .create()
+                    moshi = Moshi.Builder()
+                            .add(KotlinJsonAdapterFactory())
+                            .build()
                 }
     }
 
@@ -47,7 +46,7 @@ class GitHuntConverter private constructor(context: Context?): GraphConverter(co
     override fun responseBodyConverter(type: Type?, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
         return when (type) {
             is ResponseBody -> super.responseBodyConverter(type, annotations, retrofit)
-            else -> ResponseConverter<Any>(type, gson)
+            else -> ResponseConverter<Any>(type, moshi)
         }
     }
 
@@ -68,6 +67,6 @@ class GitHuntConverter private constructor(context: Context?): GraphConverter(co
             parameterAnnotations: Array<Annotation>,
             methodAnnotations: Array<Annotation>,
             retrofit: Retrofit?): Converter<QueryContainerBuilder, RequestBody>? {
-        return RequestConverter(methodAnnotations, graphProcessor, gson)
+        return RequestConverter(methodAnnotations, graphProcessor, moshi)
     }
 }

@@ -25,7 +25,7 @@ class WebFactory private constructor(context: Context?){
 
         if (BuildConfig.DEBUG) {
             val httpLoggingInterceptor = HttpLoggingInterceptor()
-                    .setLevel(HttpLoggingInterceptor.Level.HEADERS)
+                    .setLevel(HttpLoggingInterceptor.Level.BODY)
             httpClient.addInterceptor(httpLoggingInterceptor)
         }
 

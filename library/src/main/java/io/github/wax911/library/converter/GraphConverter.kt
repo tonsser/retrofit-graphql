@@ -1,8 +1,8 @@
 package io.github.wax911.library.converter
 
 import android.content.Context
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.github.wax911.library.annotation.processor.GraphProcessor
 import io.github.wax911.library.converter.request.GraphRequestConverter
 import io.github.wax911.library.converter.response.GraphResponseConverter
@@ -31,7 +31,7 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
         GraphProcessor.getInstance(context?.assets)
     }
 
-    protected lateinit var gson: Gson
+    protected lateinit var moshi: Moshi
 
     /**
      * Response body converter delegates logic processing to a child class that handles
@@ -49,7 +49,7 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
     override fun responseBodyConverter(type: Type?, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
         return when (type) {
             is ResponseBody -> super.responseBodyConverter(type, annotations, retrofit)
-            else -> GraphResponseConverter<Any>(type, gson)
+            else -> GraphResponseConverter<Any>(type, moshi)
         }
     }
 
@@ -70,7 +70,7 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
             parameterAnnotations: Array<Annotation>,
             methodAnnotations: Array<Annotation>,
             retrofit: Retrofit?): Converter<QueryContainerBuilder, RequestBody>? {
-        return GraphRequestConverter(methodAnnotations, graphProcessor, gson)
+        return GraphRequestConverter(methodAnnotations, graphProcessor, moshi)
     }
 
 
@@ -85,11 +85,9 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
          */
         fun create(context: Context?): GraphConverter {
             return GraphConverter(context).apply {
-                gson = GsonBuilder()
-                        .enableComplexMapKeySerialization()
-                        .serializeNulls()
-                        .setLenient()
-                        .create()
+                moshi = Moshi.Builder()
+                        .add(KotlinJsonAdapterFactory())
+                        .build()
             }
         }
 
@@ -100,9 +98,9 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
          * @param context any valid application context
          * @param gson custom gson implementation
          */
-        fun create(context: Context?, gson: Gson): GraphConverter {
+        fun create(context: Context?, moshi: Moshi): GraphConverter {
             return GraphConverter(context).apply {
-                this.gson = gson
+                this.moshi = moshi
             }
         }
     }

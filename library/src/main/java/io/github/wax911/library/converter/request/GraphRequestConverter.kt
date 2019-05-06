@@ -1,9 +1,10 @@
 package io.github.wax911.library.converter.request
 
 import android.util.Log
-import com.google.gson.Gson
+import com.squareup.moshi.Moshi
 import io.github.wax911.library.annotation.processor.GraphProcessor
 import io.github.wax911.library.converter.GraphConverter
+import io.github.wax911.library.model.request.QueryContainer
 import io.github.wax911.library.model.request.QueryContainerBuilder
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -15,7 +16,7 @@ import retrofit2.Converter
 open class GraphRequestConverter(
         protected val methodAnnotations: Array<Annotation>,
         protected val graphProcessor: GraphProcessor,
-        protected val gson: Gson
+        protected val moshi: Moshi
 ) : Converter<QueryContainerBuilder, RequestBody> {
 
     /**
@@ -30,7 +31,7 @@ open class GraphRequestConverter(
         val queryContainer = containerBuilder
                 .setQuery(graphProcessor.getQuery(methodAnnotations))
                 .build()
-        val queryJson = gson.toJson(queryContainer)
+        val queryJson = moshi.adapter(QueryContainer::class.java).serializeNulls().toJson(queryContainer)
         Log.d("GraphRequestConverter", queryJson)
         return RequestBody.create(MediaType.parse(GraphConverter.MimeType), queryJson)
     }

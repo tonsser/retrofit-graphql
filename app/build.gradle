@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
-    id("kotlin-kapt")
     id("kotlin-android")
+    id("kotlin-kapt")
     id("kotlin-android-extensions")
 }
 
@@ -55,6 +55,9 @@ dependencies {
     /** Retrofit Libraries */
     implementation "com.squareup.retrofit2:retrofit:$rootProject.retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$rootProject.retrofit"
+    implementation "com.squareup.retrofit2:converter-moshi:$rootProject.retrofit"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$rootProject.kotlin"
+    implementation("com.squareup.moshi:moshi-kotlin:$rootProject.moshi")
     implementation "com.squareup.okhttp3:logging-interceptor:$rootProject.httpLogger"
 
     /** Glide Libraries */
