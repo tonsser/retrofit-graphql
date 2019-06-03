@@ -3,10 +3,9 @@ plugins {
     id("kotlin-android")
     id("kotlin-android-extensions")
     id("com.github.dcendents.android-maven")
+    id("com.jfrog.bintray")
 }
 
-apply plugin: 'com.android.library'
-apply plugin: 'com.jfrog.bintray'
 android {
     compileSdkVersion rootProject.compileSdk
     defaultConfig {
@@ -31,8 +30,6 @@ androidExtensions {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     implementation 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
 
     /** Kotlin Libraries */
@@ -49,9 +46,3 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.espresso"
 }
 apply from: '../deploy.gradle'
-
-//tasks.withType(Javadoc) {
-//    options.addStringOption('Xdoclint:none', '-quiet')
-//    options.addStringOption('encoding', 'UTF-8')
-//    options.addStringOption('charSet', 'UTF-8')
-//}

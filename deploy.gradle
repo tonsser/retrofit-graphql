@@ -20,7 +20,7 @@
  * Make a copy of the deploy.properties template:
  * https://github.com/JoaquimLey/jcenter-config/deploy.properties
  * 
- * Run with: ./gradlew :moduleName bintrayUpload
+ * Run with: ./gradlew :library bintrayUpload
  * 
  * More info: https://github.com/JoaquimLey/jcenter-config
  */
@@ -35,6 +35,8 @@ bintray {
     user = properties.getProperty('bintray.user')
     key = properties.getProperty('bintray.apikey')
     //dryRun = properties.getProperty('bintray.dryRun')
+    //Allow overwriting of files on bintray
+    override = true
     publish = properties.getProperty('bintray.publish')
     configurations = ['archives'] //When uploading configuration files
     pkg {
