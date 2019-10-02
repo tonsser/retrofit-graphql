@@ -28,11 +28,25 @@ open class GraphRequestConverter(
      * @return Request body
      */
     override fun convert(containerBuilder: QueryContainerBuilder): RequestBody {
-        val queryContainer = containerBuilder
-                .setQuery(graphProcessor.getQuery(methodAnnotations))
-                .build()
-        val queryJson = moshi.adapter(QueryContainer::class.java).serializeNulls().toJson(queryContainer)
-        Log.d("GraphRequestConverter", queryJson)
-        return RequestBody.create(MediaType.parse(GraphConverter.MimeType), queryJson)
+	    val queryContainer = getQueryContainer(containerBuilder)
+	    val queryJson = moshi.adapter(QueryContainer::class.java).serializeNulls().toJson(queryContainer)
+	    Log.d("GraphRequestConverter", queryJson)
+	    return RequestBody.create(MediaType.parse(GraphConverter.MimeType), queryJson)
     }
+
+	protected fun getQueryContainer(containerBuilder: QueryContainerBuilder) : QueryContainer{
+		return graphProcessor.getQuery(methodAnnotations)
+				?.let { query ->
+					containerBuilder
+							.setQuery(query)
+							.apply {
+								// if no operation name was set then set the one in the query
+								if (!hasOperationName()) {
+									val operationName = GraphProcessor.getOperationName(query)
+									setOperationName(operationName)
+								}
+							}
+							.build()
+				} ?: containerBuilder.build()
+	}
 }

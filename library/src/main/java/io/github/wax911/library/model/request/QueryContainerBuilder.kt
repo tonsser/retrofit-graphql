@@ -51,6 +51,8 @@ class QueryContainerBuilder(private val queryContainer: QueryContainer = QueryCo
         return queryContainer.variables.containsKey(key)
     }
 
+    fun hasOperationName() = queryContainer.operationName != null
+
     /**
      * Should only be called by the GraphQLConverter or any other subclasses of it
      * after the query has been added to the request

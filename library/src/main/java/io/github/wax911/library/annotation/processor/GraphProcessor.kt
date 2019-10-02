@@ -111,6 +111,12 @@ class GraphProcessor private constructor(assetManager: AssetManager?) {
         private const val defaultExtension = ".graphql"
         private const val defaultDirectory = "graphql"
 
+	    val OPERATIONS: Array<String> = arrayOf(
+			    "query",
+			    "mutation",
+			    "subscription"
+	    )
+
         fun getInstance(assetManager: AssetManager?): GraphProcessor {
             val singleton = instance
             if (singleton != null)
@@ -127,5 +133,17 @@ class GraphProcessor private constructor(assetManager: AssetManager?) {
                 }
             }
         }
+
+	    fun getOperationName(operation: String): String? {
+		    val startIndex = OPERATIONS.find {
+			    operation.startsWith(it)
+		    }?.let {
+			    it.length + 1
+		    } ?: return null
+
+		    val endIndex = operation.indexOfAny("({".toCharArray())
+
+		    return operation.substring(startIndex, endIndex).trim()
+	    }
     }
 }

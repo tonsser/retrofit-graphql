@@ -21,9 +21,7 @@ class RequestConverter(methodAnnotations: Array<Annotation>,
      * @return Request body
      */
     override fun convert(containerBuilder: QueryContainerBuilder): RequestBody {
-        val queryContainer = containerBuilder
-                .setQuery(graphProcessor.getQuery(methodAnnotations))
-                .build()
+        val queryContainer = getQueryContainer(containerBuilder)
 
         // Extending and customizing your requests
         if(REMOVE_NULLS) {
