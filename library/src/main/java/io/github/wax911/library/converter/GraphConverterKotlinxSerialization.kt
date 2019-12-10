@@ -2,10 +2,9 @@ package io.github.wax911.library.converter
 
 import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.github.wax911.library.annotation.processor.GraphProcessor
-import io.github.wax911.library.converter.request.GraphRequestConverter
+import io.github.wax911.library.converter.request.GraphRequestConverterMoshi
+import io.github.wax911.library.converter.request.GraphRequestConverterKotlinSerialization
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
 import kotlinx.serialization.UnstableDefault
@@ -36,7 +35,6 @@ open class GraphConverterKotlinxSerialization protected constructor(context: Con
         GraphProcessor.getInstance(context?.assets)
     }
 
-    protected lateinit var moshi: Moshi
     protected lateinit var converterFactory: Converter.Factory
 
     /**
@@ -62,7 +60,7 @@ open class GraphConverterKotlinxSerialization protected constructor(context: Con
     /**
      * Response body converter delegates logic processing to a child class that handles
      * wrapping and deserialization of the json response data.
-     * @see GraphRequestConverter
+     * @see GraphRequestConverterMoshi
      * <br></br>
      *
      *
@@ -76,7 +74,7 @@ open class GraphConverterKotlinxSerialization protected constructor(context: Con
             parameterAnnotations: Array<Annotation>,
             methodAnnotations: Array<Annotation>,
             retrofit: Retrofit?): Converter<QueryContainerBuilder, RequestBody>? {
-        return GraphRequestConverter(methodAnnotations, graphProcessor, moshi)
+        return GraphRequestConverterKotlinSerialization(methodAnnotations, graphProcessor)
     }
 
     companion object {
@@ -92,20 +90,12 @@ open class GraphConverterKotlinxSerialization protected constructor(context: Con
          * @param gson custom Moshi implementation
          */
         @UnstableDefault
-        fun create(context: Context?, moshi: Moshi? = null, converterFactory: Converter.Factory? = null): GraphConverterKotlinxSerialization {
+        fun create(context: Context?, converterFactory: Converter.Factory? = null): GraphConverterKotlinxSerialization {
             return GraphConverterKotlinxSerialization(context).apply {
-                this.moshi = moshi ?: createDefaultMoshi()
-
                 this.converterFactory = converterFactory ?: createDefaultResponseConverterFactoryConfig()
                 .asConverterFactory(responseContentType)
             }
         }
-
-        @UnstableDefault
-        fun createDefaultMoshi() =
-                Moshi.Builder()
-                        .add(KotlinJsonAdapterFactory())
-                        .build()
 
         @UnstableDefault
         fun createDefaultResponseConverterFactoryConfig() =

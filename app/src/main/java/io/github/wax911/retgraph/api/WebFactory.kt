@@ -31,10 +31,8 @@ class WebFactory private constructor(context: Context?){
         Retrofit.Builder()
                 .client(httpClient.build())
                 .baseUrl("https://api.githunt.com/")
-                // the default converter
-                //.addConverterFactory(GraphConverter.create(context))
-                // or
-//                .addConverterFactory(GitHuntConverterMoshi.create(context))
+                // Moshi converter
+                //.addConverterFactory(GraphConverterMoshi.create(context))
                 .addConverterFactory(GraphConverterKotlinxSerialization.create(context))
                 .build()
     }

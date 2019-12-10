@@ -4,7 +4,7 @@ import android.content.Context
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.github.wax911.library.annotation.processor.GraphProcessor
-import io.github.wax911.library.converter.request.GraphRequestConverter
+import io.github.wax911.library.converter.request.GraphRequestConverterMoshi
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
 import okhttp3.RequestBody
@@ -56,7 +56,7 @@ open class GraphConverterMoshi protected constructor(context: Context?) : Conver
     /**
      * Response body converter delegates logic processing to a child class that handles
      * wrapping and deserialization of the json response data.
-     * @see GraphRequestConverter
+     * @see GraphRequestConverterMoshi
      * <br></br>
      *
      *
@@ -70,7 +70,7 @@ open class GraphConverterMoshi protected constructor(context: Context?) : Conver
             parameterAnnotations: Array<Annotation>,
             methodAnnotations: Array<Annotation>,
             retrofit: Retrofit?): Converter<QueryContainerBuilder, RequestBody>? {
-        return GraphRequestConverter(methodAnnotations, graphProcessor, moshi)
+        return GraphRequestConverterMoshi(methodAnnotations, graphProcessor, moshi)
     }
 
 
