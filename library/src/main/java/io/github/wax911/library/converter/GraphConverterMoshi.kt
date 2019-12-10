@@ -1,14 +1,12 @@
-package io.github.wax911.retgraph.api.retro.converter
+package io.github.wax911.library.converter
 
 import android.content.Context
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.github.wax911.library.converter.GraphConverter
-import io.github.wax911.library.converter.request.GraphRequestConverter
+import io.github.wax911.library.annotation.processor.GraphProcessor
+import io.github.wax911.library.converter.request.GraphRequestConverterMoshi
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
-import io.github.wax911.retgraph.api.retro.converter.request.RequestConverter
-import io.github.wax911.retgraph.api.retro.converter.response.ResponseConverter
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Converter
@@ -16,19 +14,24 @@ import retrofit2.Retrofit
 import java.lang.reflect.Type
 
 /**
- * Optionally overriding the GraphConverter to customize it's implementation, otherwise one
- * could just use the default impl which does everything just fine
- */
-class GitHuntConverter private constructor(context: Context?): GraphConverter(context) {
+ * Created by max on 2017/10/22.
+ * Body for GraphQL requests and responses, closed for modification
+ * but open for extension.
+ *
+ * Protected constructor because we want to make use of the
+ * Factory Pattern to create our converter
+ * </br></br>
+ *
+ * @param context Any valid application context
+*/
 
-    companion object {
-        fun create(context: Context?): GitHuntConverter =
-                GitHuntConverter(context).apply {
-                    moshi = Moshi.Builder()
-                            .add(KotlinJsonAdapterFactory())
-                            .build()
-                }
+open class GraphConverterMoshi protected constructor(context: Context?) : Converter.Factory() {
+
+    protected val graphProcessor: GraphProcessor by lazy {
+        GraphProcessor.getInstance(context?.assets)
     }
+
+    protected lateinit var moshi: Moshi
 
     /**
      * Response body converter delegates logic processing to a child class that handles
@@ -46,14 +49,14 @@ class GitHuntConverter private constructor(context: Context?): GraphConverter(co
     override fun responseBodyConverter(type: Type?, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
         return when (type) {
             is ResponseBody -> super.responseBodyConverter(type, annotations, retrofit)
-            else -> ResponseConverter<Any>(type, moshi)
+            else -> GraphResponseConverter<Any>(type, moshi)
         }
     }
 
     /**
      * Response body converter delegates logic processing to a child class that handles
      * wrapping and deserialization of the json response data.
-     * @see GraphRequestConverter
+     * @see GraphRequestConverterMoshi
      * <br></br>
      *
      *
@@ -67,6 +70,38 @@ class GitHuntConverter private constructor(context: Context?): GraphConverter(co
             parameterAnnotations: Array<Annotation>,
             methodAnnotations: Array<Annotation>,
             retrofit: Retrofit?): Converter<QueryContainerBuilder, RequestBody>? {
-        return RequestConverter(methodAnnotations, graphProcessor, moshi)
+        return GraphRequestConverterMoshi(methodAnnotations, graphProcessor, moshi)
+    }
+
+
+    companion object {
+
+        const val MimeType = "application/graphql"
+
+        /**
+         * Default creator that uses a predefined gson configuration
+         *
+         * @param context any valid application context
+         */
+        fun create(context: Context?): GraphConverterMoshi {
+            return GraphConverterMoshi(context).apply {
+                moshi = Moshi.Builder()
+                        .add(KotlinJsonAdapterFactory())
+                        .build()
+            }
+        }
+
+        /**
+         * Allows you to provide your own Gson configuration which will be used when serialize or
+         * deserialize response and request bodies.
+         *
+         * @param context any valid application context
+         * @param gson custom gson implementation
+         */
+        fun create(context: Context?, moshi: Moshi): GraphConverterMoshi {
+            return GraphConverterMoshi(context).apply {
+                this.moshi = moshi
+            }
+        }
     }
 }

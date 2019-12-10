@@ -1,12 +1,15 @@
 package io.github.wax911.library.converter
 
 import android.content.Context
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import io.github.wax911.library.annotation.processor.GraphProcessor
-import io.github.wax911.library.converter.request.GraphRequestConverter
+import io.github.wax911.library.converter.request.GraphRequestConverterKotlinSerialization
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
+import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Converter
@@ -23,15 +26,15 @@ import java.lang.reflect.Type
  * </br></br>
  *
  * @param context Any valid application context
-*/
+ */
 
-open class GraphConverter protected constructor(context: Context?) : Converter.Factory() {
+open class GraphConverterKotlinxSerialization protected constructor(context: Context?) : Converter.Factory() {
 
     protected val graphProcessor: GraphProcessor by lazy {
         GraphProcessor.getInstance(context?.assets)
     }
 
-    protected lateinit var moshi: Moshi
+    protected lateinit var converterFactory: Converter.Factory
 
     /**
      * Response body converter delegates logic processing to a child class that handles
@@ -49,14 +52,14 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
     override fun responseBodyConverter(type: Type?, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
         return when (type) {
             is ResponseBody -> super.responseBodyConverter(type, annotations, retrofit)
-            else -> GraphResponseConverter<Any>(type, moshi)
+            else -> converterFactory.responseBodyConverter(type, annotations, retrofit)
         }
     }
 
     /**
      * Response body converter delegates logic processing to a child class that handles
      * wrapping and deserialization of the json response data.
-     * @see GraphRequestConverter
+     * @see GraphRequestConverterKotlinSerialization
      * <br></br>
      *
      *
@@ -70,37 +73,34 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
             parameterAnnotations: Array<Annotation>,
             methodAnnotations: Array<Annotation>,
             retrofit: Retrofit?): Converter<QueryContainerBuilder, RequestBody>? {
-        return GraphRequestConverter(methodAnnotations, graphProcessor, moshi)
+        return GraphRequestConverterKotlinSerialization(methodAnnotations, graphProcessor)
     }
-
 
     companion object {
 
         const val MimeType = "application/graphql"
+        private val responseContentType: MediaType = MediaType.get("application/json")
 
         /**
-         * Default creator that uses a predefined gson configuration
+         * Allows you to provide your own Kotlin Serialization converter factory
+         * which will be used when serialize or deserialize response and request bodies.
          *
          * @param context any valid application context
+         * @param jsonConfiguration custom Kotlinx Serialization Json-configuration. Defaults to
+         * JsonConfiguration(
+         *  strictMode = false,
+         *  prettyPrint = true
+         * )
          */
-        fun create(context: Context?): GraphConverter {
-            return GraphConverter(context).apply {
-                moshi = Moshi.Builder()
-                        .add(KotlinJsonAdapterFactory())
-                        .build()
-            }
-        }
-
-        /**
-         * Allows you to provide your own Gson configuration which will be used when serialize or
-         * deserialize response and request bodies.
-         *
-         * @param context any valid application context
-         * @param gson custom gson implementation
-         */
-        fun create(context: Context?, moshi: Moshi): GraphConverter {
-            return GraphConverter(context).apply {
-                this.moshi = moshi
+        @UnstableDefault
+        fun create(context: Context?, jsonConfiguration: JsonConfiguration? = null): GraphConverterKotlinxSerialization {
+            return GraphConverterKotlinxSerialization(context).apply {
+                this.converterFactory = (jsonConfiguration?.let { Json(it) }
+                        ?: Json(JsonConfiguration(
+                                strictMode = false,
+                                prettyPrint = true
+                        )))
+                        .asConverterFactory(responseContentType)
             }
         }
     }

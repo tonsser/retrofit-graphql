@@ -290,3 +290,17 @@ Assuming that you use `retrofit2.Call` as your way of performing asynchronous we
         }
     }
 ```
+
+```
+Proguard rules (from Kotlinx Serialization):
+
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.SerializationKt
+-keep,includedescriptorclasses class io.github.wax911.library.**$$serializer { *; } # <-- change package name to your app's
+-keepclassmembers class com.yourcompany.yourpackage.** { # <-- change package name to your app's
+    *** Companion;
+}
+-keepclasseswithmembers class com.yourcompany.yourpackage.** { # <-- change package name to your app's
+    kotlinx.serialization.KSerializer serializer(...);
+}
+``

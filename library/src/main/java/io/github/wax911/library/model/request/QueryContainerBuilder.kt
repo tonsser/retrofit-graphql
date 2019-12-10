@@ -56,7 +56,7 @@ class QueryContainerBuilder(private val queryContainer: QueryContainer = QueryCo
     /**
      * Should only be called by the GraphQLConverter or any other subclasses of it
      * after the query has been added to the request
-     * @see io.github.wax911.library.converter.GraphConverter
+     * @see io.github.wax911.library.converter.GraphConverterMoshi
      */
     fun build(): QueryContainer {
         return queryContainer
