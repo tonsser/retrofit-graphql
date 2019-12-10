@@ -20,13 +20,3 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep class io.github.wax911.library.model.** { *; }
-
--keepattributes *Annotation*, InnerClasses
--dontnote kotlinx.serialization.SerializationKt
--keep,includedescriptorclasses class io.github.wax911.library.**$$serializer { *; } # <-- change package name to your app's
--keepclassmembers class com.yourcompany.yourpackage.** { # <-- change package name to your app's
-    *** Companion;
-}
--keepclasseswithmembers class com.yourcompany.yourpackage.** { # <-- change package name to your app's
-    kotlinx.serialization.KSerializer serializer(...);
-}
