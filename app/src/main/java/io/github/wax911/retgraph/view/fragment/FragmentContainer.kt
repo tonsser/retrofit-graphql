@@ -152,8 +152,8 @@ class FragmentContainer : Fragment(), Observer<TrendingFeed> {
             adapterExample.apply {
                 if (refreshLayout?.isRefreshing == true)
                     model.clear()
-//                if (model.size < 1)
-//                    addItems(trendingFeed.feed)
+                if (model.size < 1)
+                    addItems(trendingFeed.feed)
             }
         }
         else

@@ -6,7 +6,7 @@ import io.github.wax911.retgraph.model.parent.Entry
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TrendingFeed(val feed: List<Entry>?) : GraphResponse() {
+data class TrendingFeed(val feed: List<Entry>? = null) : GraphResponse() {
 
     @StringDef(TrendingFeed.HOT, TrendingFeed.NEW, TrendingFeed.TOP)
     internal annotation class FeedType

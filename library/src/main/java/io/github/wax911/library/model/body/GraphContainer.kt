@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GraphContainer<T>(
         val data: T?,
-        val errors: List<GraphError>?
+        val errors: List<GraphError>? = null
 ) { fun isEmpty(): Boolean = data == null }
 
 @Polymorphic

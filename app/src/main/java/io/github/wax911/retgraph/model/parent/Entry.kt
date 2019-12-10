@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Entry(
         val id: Long,
-        val vote: Vote?,
-        val score: Double?,
-        val postedBy: User?,
+        val vote: Vote? = null,
+        val score: Double? = null,
+        val postedBy: User? = null,
         val hotScore: Double,
-        val repository: Repository?)
+        val repository: Repository? = null)

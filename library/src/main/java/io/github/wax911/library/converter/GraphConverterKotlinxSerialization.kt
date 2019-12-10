@@ -8,6 +8,7 @@ import io.github.wax911.library.annotation.processor.GraphProcessor
 import io.github.wax911.library.converter.request.GraphRequestConverter
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import okhttp3.MediaType
@@ -78,32 +79,39 @@ open class GraphConverterKotlinxSerialization protected constructor(context: Con
         return GraphRequestConverter(methodAnnotations, graphProcessor, moshi)
     }
 
-
     companion object {
 
         const val MimeType = "application/graphql"
-        val responseContentType: MediaType = MediaType.get("application/json")
+        private val responseContentType: MediaType = MediaType.get("application/json")
 
         /**
          * Allows you to provide your own Gson configuration which will be used when serialize or
          * deserialize response and request bodies.
          *
          * @param context any valid application context
-         * @param gson custom gson implementation
+         * @param gson custom Moshi implementation
          */
+        @UnstableDefault
         fun create(context: Context?, moshi: Moshi? = null, converterFactory: Converter.Factory? = null): GraphConverterKotlinxSerialization {
             return GraphConverterKotlinxSerialization(context).apply {
-                this.moshi = moshi ?: Moshi.Builder()
+                this.moshi = moshi ?: createDefaultMoshi()
+
+                this.converterFactory = converterFactory ?: createDefaultResponseConverterFactoryConfig()
+                .asConverterFactory(responseContentType)
+            }
+        }
+
+        @UnstableDefault
+        fun createDefaultMoshi() =
+                Moshi.Builder()
                         .add(KotlinJsonAdapterFactory())
                         .build()
 
-                this.converterFactory = converterFactory ?: Json(
-                        JsonConfiguration(
-                                strictMode = false,
-                                prettyPrint = true
-                        )
-                ).asConverterFactory(responseContentType)
-            }
-        }
+        @UnstableDefault
+        fun createDefaultResponseConverterFactoryConfig() =
+                Json(JsonConfiguration(
+                        strictMode = false,
+                        prettyPrint = true
+                ))
     }
 }
