@@ -3,7 +3,7 @@ package io.github.wax911.retgraph.api.retro.converter
 import android.content.Context
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.github.wax911.library.converter.GraphConverter
+import io.github.wax911.library.converter.GraphConverterMoshi
 import io.github.wax911.library.converter.request.GraphRequestConverter
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
@@ -19,11 +19,11 @@ import java.lang.reflect.Type
  * Optionally overriding the GraphConverter to customize it's implementation, otherwise one
  * could just use the default impl which does everything just fine
  */
-class GitHuntConverter private constructor(context: Context?): GraphConverter(context) {
+class GitHuntConverterMoshi private constructor(context: Context?): GraphConverterMoshi(context) {
 
     companion object {
-        fun create(context: Context?): GitHuntConverter =
-                GitHuntConverter(context).apply {
+        fun create(context: Context?): GitHuntConverterMoshi =
+                GitHuntConverterMoshi(context).apply {
                     moshi = Moshi.Builder()
                             .add(KotlinJsonAdapterFactory())
                             .build()

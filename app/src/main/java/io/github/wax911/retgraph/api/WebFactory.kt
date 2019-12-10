@@ -1,12 +1,11 @@
 package io.github.wax911.retgraph.api
 
 import android.content.Context
+import io.github.wax911.library.converter.GraphConverterKotlinxSerialization
 
 import java.util.concurrent.TimeUnit
 
-import io.github.wax911.library.converter.GraphConverter
 import io.github.wax911.retgraph.BuildConfig
-import io.github.wax911.retgraph.api.retro.converter.GitHuntConverter
 import io.github.wax911.retgraph.api.retro.request.IndexModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -35,7 +34,8 @@ class WebFactory private constructor(context: Context?){
                 // the default converter
                 //.addConverterFactory(GraphConverter.create(context))
                 // or
-                .addConverterFactory(GitHuntConverter.create(context))
+//                .addConverterFactory(GitHuntConverterMoshi.create(context))
+                .addConverterFactory(GraphConverterKotlinxSerialization.create(context))
                 .build()
     }
 

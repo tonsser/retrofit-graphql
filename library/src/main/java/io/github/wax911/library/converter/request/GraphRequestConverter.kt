@@ -3,7 +3,7 @@ package io.github.wax911.library.converter.request
 import android.util.Log
 import com.squareup.moshi.Moshi
 import io.github.wax911.library.annotation.processor.GraphProcessor
-import io.github.wax911.library.converter.GraphConverter
+import io.github.wax911.library.converter.GraphConverterMoshi
 import io.github.wax911.library.model.request.QueryContainer
 import io.github.wax911.library.model.request.QueryContainerBuilder
 import okhttp3.MediaType
@@ -31,7 +31,7 @@ open class GraphRequestConverter(
 	    val queryContainer = getQueryContainer(containerBuilder)
 	    val queryJson = moshi.adapter(QueryContainer::class.java).serializeNulls().toJson(queryContainer)
 	    Log.d("GraphRequestConverter", queryJson)
-	    return RequestBody.create(MediaType.parse(GraphConverter.MimeType), queryJson)
+	    return RequestBody.create(MediaType.parse(GraphConverterMoshi.MimeType), queryJson)
     }
 
 	protected fun getQueryContainer(containerBuilder: QueryContainerBuilder) : QueryContainer{

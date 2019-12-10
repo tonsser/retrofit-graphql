@@ -4,6 +4,7 @@ plugins {
     id("kotlin-android-extensions")
     id("com.github.dcendents.android-maven")
     id("com.jfrog.bintray")
+    id("kotlinx-serialization")
 }
 
 android {
@@ -40,6 +41,8 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:$rootProject.retrofit"
     implementation("com.squareup.moshi:moshi-kotlin:$rootProject.moshi")
     implementation "org.jetbrains.kotlin:kotlin-reflect:$rootProject.kotlin"
+    implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:$retrofit_kotlinx_serialization_converter"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinx_serialization_version"
 
     testImplementation "junit:junit:$rootProject.junit"
     androidTestImplementation "androidx.test:runner:$rootProject.runner"

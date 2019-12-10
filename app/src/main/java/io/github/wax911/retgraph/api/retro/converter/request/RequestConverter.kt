@@ -2,7 +2,7 @@ package io.github.wax911.retgraph.api.retro.converter.request
 
 import com.squareup.moshi.Moshi
 import io.github.wax911.library.annotation.processor.GraphProcessor
-import io.github.wax911.library.converter.GraphConverter
+import io.github.wax911.library.converter.GraphConverterMoshi
 import io.github.wax911.library.converter.request.GraphRequestConverter
 import io.github.wax911.library.model.request.QueryContainer
 import io.github.wax911.library.model.request.QueryContainerBuilder
@@ -31,7 +31,7 @@ class RequestConverter(methodAnnotations: Array<Annotation>,
         }
 
         val queryJson = moshi.adapter(QueryContainer::class.java).serializeNulls().toJson(queryContainer)
-        return RequestBody.create(MediaType.parse(GraphConverter.MimeType), queryJson)
+        return RequestBody.create(MediaType.parse(GraphConverterMoshi.MimeType), queryJson)
     }
 
     companion object {

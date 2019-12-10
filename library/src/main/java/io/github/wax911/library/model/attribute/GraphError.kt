@@ -1,5 +1,8 @@
 package io.github.wax911.library.model.attribute
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GraphError(
         val message: String?,
         val status: Int,
