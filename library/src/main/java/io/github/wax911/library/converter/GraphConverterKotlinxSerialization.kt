@@ -3,7 +3,6 @@ package io.github.wax911.library.converter
 import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import io.github.wax911.library.annotation.processor.GraphProcessor
-import io.github.wax911.library.converter.request.GraphRequestConverterMoshi
 import io.github.wax911.library.converter.request.GraphRequestConverterKotlinSerialization
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
@@ -60,7 +59,7 @@ open class GraphConverterKotlinxSerialization protected constructor(context: Con
     /**
      * Response body converter delegates logic processing to a child class that handles
      * wrapping and deserialization of the json response data.
-     * @see GraphRequestConverterMoshi
+     * @see GraphRequestConverterKotlinSerialization
      * <br></br>
      *
      *
@@ -83,25 +82,26 @@ open class GraphConverterKotlinxSerialization protected constructor(context: Con
         private val responseContentType: MediaType = MediaType.get("application/json")
 
         /**
-         * Allows you to provide your own Gson configuration which will be used when serialize or
-         * deserialize response and request bodies.
+         * Allows you to provide your own Kotlin Serialization converter factory
+         * which will be used when serialize or deserialize response and request bodies.
          *
          * @param context any valid application context
-         * @param gson custom Moshi implementation
+         * @param jsonConfiguration custom Kotlinx Serialization Json-configuration. Defaults to
+         * JsonConfiguration(
+         *  strictMode = false,
+         *  prettyPrint = true
+         * )
          */
         @UnstableDefault
-        fun create(context: Context?, converterFactory: Converter.Factory? = null): GraphConverterKotlinxSerialization {
+        fun create(context: Context?, jsonConfiguration: JsonConfiguration? = null): GraphConverterKotlinxSerialization {
             return GraphConverterKotlinxSerialization(context).apply {
-                this.converterFactory = converterFactory ?: createDefaultResponseConverterFactoryConfig()
-                .asConverterFactory(responseContentType)
+                this.converterFactory = (jsonConfiguration?.let { Json(it) }
+                        ?: Json(JsonConfiguration(
+                                strictMode = false,
+                                prettyPrint = true
+                        )))
+                        .asConverterFactory(responseContentType)
             }
         }
-
-        @UnstableDefault
-        fun createDefaultResponseConverterFactoryConfig() =
-                Json(JsonConfiguration(
-                        strictMode = false,
-                        prettyPrint = true
-                ))
     }
 }
