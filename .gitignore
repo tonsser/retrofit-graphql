@@ -166,3 +166,5 @@ fabric.properties
 
 # End of https://www.gitignore.io/api/android,androidstudio
 /.idea/
+/deploy.properties
+/library/deploy.properties
