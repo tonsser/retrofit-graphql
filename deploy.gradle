@@ -19,6 +19,11 @@
  * 
  * Run with: ./gradlew :library:bintrayUpload
  *
+ *
+ * If you want to install on local maven, you can run:
+ *
+ * ./gradlew :library:installArchives
+ *
  */
 
 Properties properties = new Properties()
