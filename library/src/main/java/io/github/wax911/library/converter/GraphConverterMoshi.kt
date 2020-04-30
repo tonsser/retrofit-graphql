@@ -1,12 +1,15 @@
 package io.github.wax911.library.converter
 
 import android.content.Context
+import android.util.Log
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.github.wax911.library.annotation.processor.GraphProcessor
 import io.github.wax911.library.converter.request.GraphRequestConverterMoshi
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
+import io.github.wax911.library.util.LogLevel
+import io.github.wax911.library.util.Logger
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Converter
@@ -28,6 +31,7 @@ import java.lang.reflect.Type
 open class GraphConverterMoshi protected constructor(context: Context?) : Converter.Factory() {
 
     protected val graphProcessor: GraphProcessor by lazy {
+        Log.d("GraphProcessor", "graphProcessor")
         GraphProcessor.getInstance(context?.assets)
     }
 
@@ -73,6 +77,15 @@ open class GraphConverterMoshi protected constructor(context: Context?) : Conver
         return GraphRequestConverterMoshi(methodAnnotations, graphProcessor, moshi)
     }
 
+    /**
+     * Sets the minimum level for log messages. Attempted messages with a too low
+     * log level are skipped and not printed to the system log.
+     *
+     * @param logLevel The minimum log level used to print log messages
+     */
+    fun setLogLevel(logLevel: LogLevel) {
+        Logger.level = logLevel
+    }
 
     companion object {
 

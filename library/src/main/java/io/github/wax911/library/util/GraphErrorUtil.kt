@@ -18,7 +18,7 @@ fun Response<*>?.getError(): List<GraphError>? {
             val responseBody = errorBody()
             val message = responseBody?.string()
             if (responseBody != null && !message.isNullOrBlank()) {
-                val graphErrors= message.getGraphQLError()
+                val graphErrors= message.getGraphQLErrorMoshi()
                 if (graphErrors != null)
                     return graphErrors
             }
@@ -29,9 +29,10 @@ fun Response<*>?.getError(): List<GraphError>? {
     return null
 }
 
-private fun String.getGraphQLError(): List<GraphError>? {
-    Log.e("GraphErrorUtil", this)
-    val graphContainer = Moshi.Builder().build().adapter(GraphContainer::class.java).fromJson(this)
-    return graphContainer?.errors
+private fun String.getGraphQLErrorMoshi(): List<GraphError>? {
+	Log.e("GraphErrorUtil", this)
+	val graphContainer = Moshi.Builder().build().adapter(GraphContainer::class.java).fromJson(this)
+	return graphContainer?.errors
 }
+
 

@@ -7,4 +7,5 @@ data class Repository(
         val full_name: String? = null,
         val name: String? = null,
         val owner: User? = null,
-        val stargazers_count: Int)
+        val stargazers_count: Int
+)

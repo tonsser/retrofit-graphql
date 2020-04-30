@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TrendingFeed(val feed: List<Entry>? = null) : GraphResponse() {
 
-    @StringDef(TrendingFeed.HOT, TrendingFeed.NEW, TrendingFeed.TOP)
+    @StringDef(HOT, NEW, TOP)
     internal annotation class FeedType
 
     companion object {

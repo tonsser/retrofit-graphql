@@ -3,6 +3,9 @@ package io.github.wax911.library.annotation.processor
 import android.content.res.AssetManager
 import android.util.Log
 import io.github.wax911.library.annotation.GraphQuery
+import io.github.wax911.library.annotation.processor.fragment.FragmentPatcher
+import io.github.wax911.library.annotation.processor.fragment.GraphRegexUtil
+import io.github.wax911.library.util.Logger
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -13,7 +16,10 @@ import java.util.*
  * Created by max on 2018/03/12.
  * GraphQL annotation processor
  */
-class GraphProcessor private constructor(assetManager: AssetManager?) {
+class GraphProcessor private constructor(
+    assetManager: AssetManager?,
+    private val fragmentPatcher: FragmentPatcher = FragmentPatcher(defaultExtension)
+) {
 
     private val _graphFiles: MutableMap<String, String> by lazy {
         HashMap<String, String>()
@@ -26,14 +32,18 @@ class GraphProcessor private constructor(assetManager: AssetManager?) {
 
     init {
         synchronized(lock) {
-            Log.d("GraphProcessor", Thread.currentThread().name + ": has obtained a synchronized lock on the object")
+            Logger.d("GraphProcessor", Thread.currentThread().name + ": has obtained a synchronized lock on the object")
             if (_graphFiles.isEmpty()) {
-                Log.d("GraphProcessor", Thread.currentThread().name + ": is initializing query files")
+                Logger.d("GraphProcessor", Thread.currentThread().name + ": is initializing query files")
                 createGraphQLMap(defaultDirectory, assetManager)
-                Log.d("GraphProcessor", Thread.currentThread().name + ": has completed initializing all files")
-                Log.d("GraphProcessor", Thread.currentThread().name + ": Total count of graphFiles -> size: " + _graphFiles.size)
+                Logger.d("GraphProcessor", Thread.currentThread().name + ": has completed initializing all files")
+                if(_graphFiles.isEmpty()){
+                    Logger.w("GraphProcessor", "No graphFiles found in defaultDirectory: $defaultDirectory")
+                } else {
+                    Logger.d("GraphProcessor",Thread.currentThread().name + ": Total count of graphFiles -> size: " + _graphFiles.size)
+                }
             } else
-                Log.d("GraphProcessor", Thread.currentThread().name + ": skipped initialization of graphFiles -> size: " + _graphFiles.size)
+                Logger.d("GraphProcessor", Thread.currentThread().name + ": skipped initialization of graphFiles -> size: " + _graphFiles.size)
         }
     }
 
@@ -49,7 +59,6 @@ class GraphProcessor private constructor(assetManager: AssetManager?) {
 
         if (graphQuery != null) {
             val fileName = String.format("%s%s", graphQuery.value, defaultExtension)
-            Log.d("GraphProcessor", fileName)
             if (_graphFiles.containsKey(fileName))
                 return _graphFiles[fileName]
             Log.e(this.toString(), String.format("The request query %s could not be found!", graphQuery.value))
@@ -66,16 +75,33 @@ class GraphProcessor private constructor(assetManager: AssetManager?) {
                 paths?.also {
                     for (item in it) {
                         val absolute = "$path/$item"
-                        if (!item.endsWith(defaultExtension))
-                            createGraphQLMap(absolute, this)
-                        else
+                        if (item.endsWith(defaultExtension))
                             _graphFiles[item] = getFileContents(open(absolute))
+                        else
+                            createGraphQLMap(absolute, this)
                     }
                 }
             }
+
+            patchQueries()
         } catch (e: IOException) {
             e.printStackTrace()
         }
+    }
+
+    /**
+     * Patch any query with fragment references, that don't already have the fragment defined with the query.
+     */
+    @Synchronized
+    private fun patchQueries() {
+        _graphFiles.entries
+            .filter { GraphRegexUtil.containsAnOperation(it.value) }
+            .forEach {
+                val patch = fragmentPatcher.includeMissingFragments(it.key, it.value, _graphFiles)
+                if (patch.isNotEmpty()) {
+                    it.setValue("${it.value}$patch")
+                }
+            }
     }
 
     @Synchronized
