@@ -1,6 +1,6 @@
 package io.github.wax911.library.converter.response
 
-import com.google.gson.Gson
+import com.squareup.moshi.Moshi
 import okhttp3.ResponseBody
 import retrofit2.Converter
 import java.io.IOException
@@ -12,7 +12,7 @@ import java.lang.reflect.Type
  */
 open class GraphResponseConverter<T>(
         protected val type: Type?,
-        protected val gson: Gson
+        protected val moshi: Moshi
 ) : Converter<ResponseBody, T> {
 
     /**
@@ -26,11 +26,13 @@ open class GraphResponseConverter<T>(
      */
     override fun convert(responseBody: ResponseBody): T? {
         var response: T? = null
-        try {
-            val responseString = responseBody.string()
-            response = gson.fromJson<T>(responseString, type)
-        } catch (e: IOException) {
-            e.printStackTrace()
+        type?.let {
+            try {
+                val responseString = responseBody.string()
+                response = moshi.adapter<T>(it).fromJson(responseString)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
 
         return response

@@ -2,6 +2,9 @@ plugins {
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-android-extensions")
+    id("com.github.dcendents.android-maven")
+    id("com.jfrog.bintray")
+    id("kotlinx-serialization")
 }
 
 android {
@@ -20,6 +23,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildToolsVersion = '28.0.3'
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/java'
+        test.java.srcDirs += 'src/test/kotlin'
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 androidExtensions {
@@ -27,16 +40,33 @@ androidExtensions {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+//    implementation 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
 
     /** Kotlin Libraries */
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$rootProject.kotlin"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$rootProject.kotlinVersion"
 
     /** Retrofit Libraries */
     implementation "com.squareup.retrofit2:retrofit:$rootProject.retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$rootProject.retrofit"
+    implementation("com.squareup.moshi:moshi-kotlin:$rootProject.moshi")
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$rootProject.kotlinVersion"
+    implementation "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:$retrofit_kotlinx_serialization_converter"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinx_serialization_version"
 
     testImplementation "junit:junit:$rootProject.junit"
+    testImplementation "io.mockk:mockk:$mockk"
     androidTestImplementation "androidx.test:runner:$rootProject.runner"
     androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.espresso"
 }
+
+task installArchives(type: Upload) {
+    description "Installs the artifacts to the local Maven repository."
+    repositories.mavenInstaller {
+        configuration = configurations.default
+        pom.groupId = 'com.tonsser'
+        pom.artifactId = 'retrofit-graphql'
+        pom.version = rootProject.versionName
+    }
+}
+
+apply from: '../deploy.gradle'

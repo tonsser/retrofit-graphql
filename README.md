@@ -1,3 +1,8 @@
+## Forked to migrate from GSON to Moshi
+
+____
+
+
 # Retrofit Converter - With GraphQL Support &nbsp; [![](https://jitpack.io/v/AniTrend/retrofit-graphql.svg)](https://jitpack.io/#AniTrend/retrofit-graphql) &nbsp; [![Codacy Badge](https://api.codacy.com/project/badge/Grade/6fe1544b73084e25801c4343d1bb6d70)](https://www.codacy.com/app/AniTrend/retrofit-graphql?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AniTrend/retrofit-graphql&amp;utm_campaign=Badge_Grade) &nbsp; [![Build Status](https://travis-ci.org/AniTrend/retrofit-graphql.svg?branch=master)](https://travis-ci.org/AniTrend/retrofit-graphql)
 
 This is a retrofit converter which uses annotations to inject .graphql query or mutation files into a request body along with any GraphQL variables. The included example makes use of [GitHunt GraphQL API](http://api.githunt.com/graphiql) that sometimes responds with null fields, feel free to try it with any other GraphQL API like `GitHub API v4` also this project does not teach you how to use Retrofit, Glide or the ViewModel.
@@ -28,12 +33,54 @@ For a detailed example please clone the project and look at the included sample 
 - [Architecture Lifecycle](https://developer.android.com/topic/libraries/architecture/lifecycle)
 - [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)
 - [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)
+- [Koin](https://insert-koin.io/)
+- [Coroutines](https://developer.android.com/kotlin/coroutines)
 
-### The Basics
+## The Basics
 
-Firstly you'll need some to save your GraphQL queries and mutations into .graphql files, You can use this tool to generate your Insomnia workspaces into directories and files [insomnia-graphql-generator](https://github.com/AniTrend/insomnia-graphql-generator) and place these files into your assets folder as shown below:
+First, you'll need .graphql files for saving your GraphQL queries, fragments, and mutations. You can use this tool to generate your Insomnia workspaces into directories and files [insomnia-graphql-generator](https://github.com/AniTrend/insomnia-graphql-generator), placing them into your assets folder as shown below:
 
 <img src="./images/screenshots/assets_files.png" width=250 />
+
+With respect to fragments, you have two options. Either place them inside your query file after the query definition, or put them in their own file under the `assets/graphql/Example/Fragment/` folder. You may also use a mixture of the two if you wish. Note, only define one fragment per file and make sure the name of the fragment matches the filename. Here's an example:
+
+In the file `assets/graphql/Example/Query/Trending.graphql`, two fragments (`RepositoryFragment` and `UserFragment`) are referenced but not defined in the same file.
+```graphql
+query Trending($type: FeedType!, $offset: Int, $limit: Int) {
+  feed(type: $type, offset: $offset, limit: $limit) {
+    id
+    hotScore
+    repository {
+      ...RepositoryFragment
+    }
+    postedBy {
+      ...UserFragment
+    }
+  }
+}
+```
+
+The `RepositoryFragment` lives in `assets/graphql/Example/Fragment/RepositoryFragment.graphql`. It happens to reference `UserFragment` which is also defined in its own file. Note, it is fine for fragments to reference other fragments.
+```graphql
+fragment RepositoryFragment on Repository {
+  name
+  full_name
+  owner {
+    ...UserFragment
+  }
+  stargazers_count
+}
+```
+
+The `UserFragment` lives in `assets/graphql/Example/Fragment/UserFragment.graphql`:
+```graphql
+fragment UserFragment on User {
+  login
+  avatar_url
+  html_url
+}
+```
+
 
 - __Add the JitPack repository to your build file__
 
@@ -50,9 +97,17 @@ allprojects {
 
 ```javascript
 dependencies {
-    implementation 'com.github.AniTrend:retrofit-graphql:{latest_version}'
+    implementation 'com.github.anitrend:retrofit-graphql:{latest_version}'
 }
 ```
+
+- __Optional R8 / ProGuard Rules__
+
+If you are using R8 the shrinking and obfuscation rules are included automatically.
+
+ProGuard users must manually copy the options from [this file](https://github.com/AniTrend/retrofit-graphql/blob/master/library/proguard-rules.pro).
+
+> You might also need [retrofit rules](https://github.com/square/retrofit/blob/master/retrofit/src/main/resources/META-INF/proguard/retrofit2.pro) and it's dependencies (OkHttp and Okio)
 ___
 
 Next we make our retrofit interfaces and annotate them with the `@GraphQuery` annotation using the name of the .graphql file without the extention, this will allow the runtime resolution of the target file inside your assets to be loaded before the request is sent. e.g.
@@ -62,12 +117,12 @@ Next we make our retrofit interfaces and annotate them with the `@GraphQuery` an
     @POST("graphql")
     @GraphQuery("Trending")
     @Headers("Content-Type: application/json")
-    fun getTrending(@Body request: QueryContainerBuilder): Call<GraphContainer<TrendingFeed>>
+    suspend fun getTrending(@Body request: QueryContainerBuilder): Response<GraphContainer<TrendingFeed>>
 
     @POST("graphql")
     @GraphQuery("RepoEntries")
     @Headers("Content-Type: application/json")
-    fun getRepoEntries(@Body request: QueryContainerBuilder): Call<GraphContainer<EntryFeed>>
+    suspend fun getRepoEntries(@Body request: QueryContainerBuilder): Response<GraphContainer<EntryFeed>>
 ```
 
 ### Models
@@ -79,7 +134,7 @@ There are also numerous tools available online e.g [jsonschema2pojo](http://www.
 By default the library supplies you with a `QueryContainerBuilder` which is a holder for your GraphQL variables and request.
 Also __two__ basic top level models, which you don't have to use if you want to design your own:
 
-###### QueryContainerBuilder
+#### QueryContainerBuilder
 
 Suggest using this as is, but if you want to make your own that's not a problem either. The QueryContainerBuilder is used as follows:
 
@@ -91,10 +146,10 @@ query Trending($type: FeedType!, $offset: Int, $limit: Int) {
     id
     hotScore
     repository {
-      ...repository
+      ...RepositoryFragment
     }
     postedBy {
-      ...user
+      ...UserFragment
     }
   }
 }
@@ -108,10 +163,23 @@ val queryBuilder = QueryContainerBuilder()
             .putVariable("offset", 1)
             .putVariable("limit", 15);
 ```
+
+> You can also add a map to the query container using `putVariables()`
+> ```java
+> val queryBuilder = QueryContainerBuilder()
+>             .putVariables(
+>                 mapOf(
+>                     "type" to feedType,
+>                     "limit" to 20,
+>                     "offset" to 1
+>                 )
+>             )
+> ```
+
 The QueryContainerBuilder is then passed into your retrofit interface method as parameter and that's it! Just like an ordinary retrofit application.
 
 
-###### GraphError
+#### GraphError
 
 Common GraphQL error that makes use of extension functions
 
@@ -147,7 +215,7 @@ private fun String.getGraphQLError(): List<GraphError>? {
 }
 ```
 
-###### GraphContainer
+#### GraphContainer
 
 Similar to the top level GraphQL response, but the data type is generic to allow easy reuse.
 
@@ -158,20 +226,7 @@ data class GraphContainer<T>(
 ) { fun isEmpty(): Boolean = data == null }
 ```
 
-## Working Example
-
-_Check the example project named app for a more extensive overview of how everything works_
-
-## The Result
-
-<img src="./images/screenshots/device-2018-12-17-172758.png" width="300"/> &nbsp; <img src="./images/screenshots/device-2018-12-17-172740.png" width="300"/> &nbsp; <img src="./images/screenshots/device-2018-12-17-172811.png" width="300"/>
-
-## Proof Of Concept?
-
-This project is derived from [AniTrend](https://github.com/AniTrend/anitrend-app) which is already published on the PlayStore
-
-
-## Automatic persisted queries
+### Automatic Persisted Queries
 
 Persisted queries allows clients to use HTTP GET instead of HTTP POST, making it easier to cache in a CDN (which might not allow caching of HTTP POST). The automated part is that the protocol allows clients to register new query id:s on the fly, so they do not have to be known by the server beforehand.
 
@@ -285,3 +340,29 @@ Assuming that you use `retrofit2.Call` as your way of performing asynchronous we
         }
     }
 ```
+
+## Working Example
+
+_Check the example project named app for a more extensive overview of how everything works_
+
+## The Result
+
+<img src="./images/screenshots/device-2018-12-17-172758.png" width="300"/> &nbsp; <img src="./images/screenshots/device-2018-12-17-172740.png" width="300"/> &nbsp; <img src="./images/screenshots/device-2018-12-17-172811.png" width="300"/>
+
+## Proof Of Concept?
+
+This project is derived from [AniTrend](https://github.com/AniTrend/anitrend-app) which is already published on the PlayStore
+
+```
+Proguard rules (from Kotlinx Serialization):
+
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.SerializationKt
+-keep,includedescriptorclasses class io.github.wax911.library.**$$serializer { *; } # <-- change package name to your app's
+-keepclassmembers class com.yourcompany.yourpackage.** { # <-- change package name to your app's
+    *** Companion;
+}
+-keepclasseswithmembers class com.yourcompany.yourpackage.** { # <-- change package name to your app's
+    kotlinx.serialization.KSerializer serializer(...);
+}
+``

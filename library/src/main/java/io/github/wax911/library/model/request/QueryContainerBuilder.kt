@@ -8,7 +8,9 @@ import kotlinx.android.parcel.Parcelize
  * Query & Variable builder for graph requests
  */
 @Parcelize
-class QueryContainerBuilder(private val queryContainer: QueryContainer = QueryContainer()) : Parcelable {
+class QueryContainerBuilder(
+        private val queryContainer: QueryContainer = QueryContainer()
+) : Parcelable {
 
     fun setQuery(query: String?): QueryContainerBuilder {
         this.queryContainer.query = query
@@ -51,10 +53,12 @@ class QueryContainerBuilder(private val queryContainer: QueryContainer = QueryCo
         return queryContainer.variables.containsKey(key)
     }
 
+    fun hasOperationName() = queryContainer.operationName != null
+
     /**
      * Should only be called by the GraphQLConverter or any other subclasses of it
      * after the query has been added to the request
-     * @see io.github.wax911.library.converter.GraphConverter
+     * @see io.github.wax911.library.converter.GraphConverterMoshi
      */
     fun build(): QueryContainer {
         return queryContainer

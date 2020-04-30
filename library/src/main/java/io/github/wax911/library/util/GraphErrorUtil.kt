@@ -1,8 +1,7 @@
 package io.github.wax911.library.util
 
 import android.util.Log
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.squareup.moshi.Moshi
 import io.github.wax911.library.model.attribute.GraphError
 import io.github.wax911.library.model.body.GraphContainer
 import retrofit2.Response
@@ -19,7 +18,7 @@ fun Response<*>?.getError(): List<GraphError>? {
             val responseBody = errorBody()
             val message = responseBody?.string()
             if (responseBody != null && !message.isNullOrBlank()) {
-                val graphErrors= message.getGraphQLError()
+                val graphErrors= message.getGraphQLErrorMoshi()
                 if (graphErrors != null)
                     return graphErrors
             }
@@ -30,10 +29,10 @@ fun Response<*>?.getError(): List<GraphError>? {
     return null
 }
 
-private fun String.getGraphQLError(): List<GraphError>? {
-    Log.e("GraphErrorUtil", this)
-    val tokenType = object : TypeToken<GraphContainer<*>>() {}.type
-    val graphContainer = Gson().fromJson<GraphContainer<*>>(this, tokenType)
-    return graphContainer.errors
+private fun String.getGraphQLErrorMoshi(): List<GraphError>? {
+	Log.e("GraphErrorUtil", this)
+	val graphContainer = Moshi.Builder().build().adapter(GraphContainer::class.java).fromJson(this)
+	return graphContainer?.errors
 }
+
 

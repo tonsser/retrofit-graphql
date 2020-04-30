@@ -1,12 +1,15 @@
 package io.github.wax911.library.converter
 
 import android.content.Context
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import android.util.Log
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.github.wax911.library.annotation.processor.GraphProcessor
-import io.github.wax911.library.converter.request.GraphRequestConverter
+import io.github.wax911.library.converter.request.GraphRequestConverterMoshi
 import io.github.wax911.library.converter.response.GraphResponseConverter
 import io.github.wax911.library.model.request.QueryContainerBuilder
+import io.github.wax911.library.util.LogLevel
+import io.github.wax911.library.util.Logger
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Converter
@@ -25,13 +28,14 @@ import java.lang.reflect.Type
  * @param context Any valid application context
 */
 
-open class GraphConverter protected constructor(context: Context?) : Converter.Factory() {
+open class GraphConverterMoshi protected constructor(context: Context?) : Converter.Factory() {
 
     protected val graphProcessor: GraphProcessor by lazy {
+        Log.d("GraphProcessor", "graphProcessor")
         GraphProcessor.getInstance(context?.assets)
     }
 
-    protected lateinit var gson: Gson
+    protected lateinit var moshi: Moshi
 
     /**
      * Response body converter delegates logic processing to a child class that handles
@@ -49,14 +53,14 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
     override fun responseBodyConverter(type: Type?, annotations: Array<Annotation>, retrofit: Retrofit): Converter<ResponseBody, *>? {
         return when (type) {
             is ResponseBody -> super.responseBodyConverter(type, annotations, retrofit)
-            else -> GraphResponseConverter<Any>(type, gson)
+            else -> GraphResponseConverter<Any>(type, moshi)
         }
     }
 
     /**
      * Response body converter delegates logic processing to a child class that handles
      * wrapping and deserialization of the json response data.
-     * @see GraphRequestConverter
+     * @see GraphRequestConverterMoshi
      * <br></br>
      *
      *
@@ -70,9 +74,18 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
             parameterAnnotations: Array<Annotation>,
             methodAnnotations: Array<Annotation>,
             retrofit: Retrofit?): Converter<QueryContainerBuilder, RequestBody>? {
-        return GraphRequestConverter(methodAnnotations, graphProcessor, gson)
+        return GraphRequestConverterMoshi(methodAnnotations, graphProcessor, moshi)
     }
 
+    /**
+     * Sets the minimum level for log messages. Attempted messages with a too low
+     * log level are skipped and not printed to the system log.
+     *
+     * @param logLevel The minimum log level used to print log messages
+     */
+    fun setLogLevel(logLevel: LogLevel) {
+        Logger.level = logLevel
+    }
 
     companion object {
 
@@ -83,13 +96,11 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
          *
          * @param context any valid application context
          */
-        fun create(context: Context?): GraphConverter {
-            return GraphConverter(context).apply {
-                gson = GsonBuilder()
-                        .enableComplexMapKeySerialization()
-                        .serializeNulls()
-                        .setLenient()
-                        .create()
+        fun create(context: Context?): GraphConverterMoshi {
+            return GraphConverterMoshi(context).apply {
+                moshi = Moshi.Builder()
+                        .add(KotlinJsonAdapterFactory())
+                        .build()
             }
         }
 
@@ -100,9 +111,9 @@ open class GraphConverter protected constructor(context: Context?) : Converter.F
          * @param context any valid application context
          * @param gson custom gson implementation
          */
-        fun create(context: Context?, gson: Gson): GraphConverter {
-            return GraphConverter(context).apply {
-                this.gson = gson
+        fun create(context: Context?, moshi: Moshi): GraphConverterMoshi {
+            return GraphConverterMoshi(context).apply {
+                this.moshi = moshi
             }
         }
     }
