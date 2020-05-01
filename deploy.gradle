@@ -15,14 +15,15 @@
  */
 
 /**
- * Gradle script for uploading your own library to jcenter()
+ * Gradle script for uploading your own library to bintray
  * 
- * Make a copy of the deploy.properties template:
- * https://github.com/JoaquimLey/jcenter-config/deploy.properties
- * 
- * Run with: ./gradlew :library bintrayUpload
- * 
- * More info: https://github.com/JoaquimLey/jcenter-config
+ * Run with: ./gradlew :library:bintrayUpload
+ *
+ *
+ * If you want to install on local maven, you can run:
+ *
+ * ./gradlew :library:installArchives
+ *
  */
 
 Properties properties = new Properties()
