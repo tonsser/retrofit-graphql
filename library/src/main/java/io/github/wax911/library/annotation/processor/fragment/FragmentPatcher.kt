@@ -45,7 +45,8 @@ class FragmentPatcher(
                 // Now we can append this fragment's content.
                 val isNew = !aggregation.contains(includeGraphContent.toRegex(RegexOption.LITERAL))
                 if (isNew) {
-                    aggregation.append("\n\n$includeGraphContent")
+                    /*Thomas: The original repo prepends \n\n here, which messes up our curl logs. Don't add them.*/
+                    aggregation.append(" $includeGraphContent")
                 }
             } else {
                 // This fragment is nowhere to be found.
