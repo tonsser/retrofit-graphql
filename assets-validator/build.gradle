@@ -1,0 +1,13 @@
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+dependencies {
+    implementation project(":annotation")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$rootProject.kotlinVersion"
+
+    testImplementation "junit:junit:$rootProject.junit"
+}
