@@ -69,4 +69,4 @@ task installArchives(type: Upload) {
     }
 }
 
-apply from: '../deploy.gradle'
+//apply from: '../deploy.gradle'
