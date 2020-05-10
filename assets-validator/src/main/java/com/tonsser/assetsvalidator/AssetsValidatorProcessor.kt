@@ -23,7 +23,9 @@ class AssetsValidatorProcessor : AbstractProcessor() {
 		val gqlFileNames = mutableListOf<String>()
 		for (element in roundEnv.getElementsAnnotatedWith(annotation)) {
 			val a = element.getAnnotation(annotation)
-			gqlFileNames += a.value
+			if (!a.ignore) {
+				gqlFileNames += a.value
+			}
 		}
 
 		if (gqlFileNames.isEmpty()) {
