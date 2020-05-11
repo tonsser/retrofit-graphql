@@ -41,7 +41,7 @@ androidExtensions {
 
 dependencies {
 //    implementation 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
-
+    api project(":annotation")
     /** Kotlin Libraries */
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$rootProject.kotlinVersion"
 
@@ -69,4 +69,4 @@ task installArchives(type: Upload) {
     }
 }
 
-apply from: '../deploy.gradle'
+//apply from: '../deploy.gradle'
